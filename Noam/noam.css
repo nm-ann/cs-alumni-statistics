@@ -23,19 +23,31 @@
     fill: orange;
 }
 
-.line {
+.grad-year .line {
     stroke: steelblue;
+    stroke-width: 4px;
+}
+
+.grad-year .x-axis {
     stroke-width: 2px;
 }
 
-.x-axis {
+.grad-year .y-axis {
     stroke-width: 2px;
 }
 
-.y-axis {
-    stroke-width: 2px;
-}
-
-.tick {
+.grad-year .tick {
     font-size: 1.2em;
+}
+
+.grad-school .x-axis {
+    stroke-width: 2px;
+}
+
+.grad-school .y-axis {
+    stroke-width: 2px;
+}
+
+.grad-school .tick {
+    font-size: 1.1em;
 }

@@ -2,6 +2,7 @@ gender();
 industry();
 usLocations();
 gradYear();
+gradSchool();
 
 function gender() {
     //data as an array of json objects, each object holds the information for its respectove 'pie slice'
@@ -408,7 +409,8 @@ function gradYear() {
     canvas.append('g')
         .attr('class', 'y-axis')
         .attr('transform', 'translate(50, 20)')
-        .call(d3.axisLeft(y))
+        .call(d3.axisLeft(y));
+
     canvas.append('text')
         .attr('transform', 'rotate(-90)')
         .attr('x',0 - (height / 2))
@@ -423,4 +425,225 @@ function gradYear() {
         .attr('class', 'line')
         .attr('d', line)
         .attr('fill', 'none')
+}
+
+function gradSchool() {
+    var gradSchoolData= [
+        {
+            "name": "Yeshiva University",
+            "schools": [
+                {
+                    "name": "Azrieli",
+                    "total": 4
+                },
+                {
+                    "name": "Cardozo",
+                    "total": 4
+                },
+                {
+                    "name": "Bernard Revel",
+                    "total": 3
+                },
+                {
+                    "name": "RIETS",
+                    "total": 13
+                },
+                {
+                    "name": "Albert Einsten",
+                    "total": 1
+                },
+                {
+                    "name": "Other",
+                    "total": 18
+                },
+            ],
+            "total": 43,
+            "color": "#3265CB"
+        },
+        {
+            "name": "New York University",
+            "schools": [
+                {
+                    "name": "School of Law",
+                    "total": 3
+                },
+                {
+                    "name": "School of Business",
+                    "total": 12
+                },
+                {
+                    "name": "Schools of Arts & Science",
+                    "total": 1
+                },
+                {
+                    "name": "School of Engineering",
+                    "total": 3
+                },
+                {
+                    "name": "Other",
+                    "total": 24
+                },
+            ],
+            "total": 43,
+            "color": "#57068C"
+        },
+        {
+            "name": "Columbia University",
+            "schools": [
+                {
+                    "name": "School of Engineering and Applied Sciences",
+                    "total": 4
+                },
+                {
+                    "name": "School of Law",
+                    "total": 2
+                },
+                {
+                    "name": "Other",
+                    "total": 18
+                },
+            ],
+            "total": 24,
+            "color": "#5EA1E4"
+        },
+        {
+            "name": "Yale University",
+            "schools": [
+                {
+                    "name": "School of Medicine",
+                    "total": 1
+                },
+                {
+                    "name": "Other",
+                    "total": 2
+                },
+            ],
+            "total": 3,
+            "color": "#2A3D9F"
+        },
+        {
+            "name": "City University of New York",
+            "schools": [
+                {
+                    "name": "Other",
+                    "total": 10
+                },
+            ],
+            "total": 10,
+            "color": "#FF9800"
+        },
+        {
+            "name": "MIT",
+            "schools": [
+                {
+                    "name": "Other",
+                    "total": 3
+                },
+            ],
+            "total": 3,
+            "color": "#A5001E"
+        },
+        {
+            "name": "Harvard University",
+            "schools": [
+                {
+                    "name": "Other",
+                    "total": 3
+                },
+            ],
+            "total": 3,
+            "color": "#A61C30"
+        },
+        {
+            "name": "Lander College",
+            "schools": [
+                {
+                    "name": "Other",
+                    "total": 4
+                },
+            ],
+            "total": 4,
+            "color": "#421C4D"
+        },
+        {
+            "name": "Other",
+            "schools": [
+                {
+                    "name": "Other",
+                    "total": 32
+                },
+            ],
+            "total": 32,
+            "color": "#1BA136"
+        }
+    ]
+    var margin = {top: 20, right: 20, bottom: 50, left: 70}
+    var width = 1000 - margin.left - margin.right;
+    var height = 500 - margin.top - margin.bottom;
+
+    //chart's x ranges from 0 to the full width
+    var x = d3.scaleBand()
+        .rangeRound([0, width])
+        .paddingInner(0.5);
+    //chart's y ranges from 0 to the full width
+    var y = d3.scaleLinear()
+        .range([height - margin.top, 0]);
+
+    x.domain(gradSchoolData.map(function(d) {
+        return d.name;
+    }));
+    y.domain([0, d3.max(gradSchoolData, function(d) {
+        return d.total;
+    })]);
+
+    var canvas = d3.select('.grad-school')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom);
+
+    var g = canvas.append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    canvas.append('g')
+        .attr('class', 'x-axis')
+        .attr('transform', 'translate(50,' + height + ')')
+        .call(d3.axisBottom(x));
+
+    canvas.append('text')
+        .attr('x', (width / 2) + margin.left)
+        .attr('y', height + margin.bottom)
+        .style('text-anchor', 'middle')
+        .style('font-size', '1.5em')
+        .text('University');
+        
+    canvas.append('g')
+        .attr('class', 'y-axis')
+        .attr('transform', 'translate(50, 20)')
+        .call(d3.axisLeft(y))
+
+    canvas.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x',0 - (height / 2))
+        .attr('dy', '1em')
+        .style('text-anchor', 'middle')
+        .style('font-size', '1.5em')
+        .text('Alumni');
+
+    canvas.selectAll('bar')
+        .data(gradSchoolData)
+        .enter()
+            .append('rect')
+            .attr('fill', function(d) {
+                return d.color;
+            })
+            .attr('x', function(d) {
+                return x(d.name) + (margin.left / 1.4);
+            })
+            .attr('width', x.bandwidth)
+            .attr('y', function(d) {
+                return y(d.total) + margin.top;
+            })
+            .attr('height', function(d) {
+                return height - y(d.total) - margin.top;
+            })
 }
