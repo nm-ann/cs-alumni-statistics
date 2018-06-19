@@ -1,5 +1,6 @@
 gender();
 industry();
+usLocations();
 
 function gender() {
     //data as an array of json objects, each object holds the information for its respectove 'pie slice'
@@ -66,7 +67,7 @@ function gender() {
         .attr('text-anchor', 'middle')
         .attr('font-size', '1.5em')
         .text(function(d) {
-            return d.data.name + " " + d.data.amount;
+            return d.data.name + " " + d.data.amount + "%";
         })
 }
 
@@ -167,4 +168,36 @@ function industry() {
         .text(function(d) {
             return d.data.name + ' ' + d.data.amount + '%';
         })
+}
+
+function usLocations() {
+    var height = 400;
+    var width = 800;
+
+    var canvas = d3.select('.us-locations')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+    
+    var g = canvas.append('g');
+    
+    //makes a 2d projection of the us
+    var projection = d3.geoAlbersUsa()
+        .translate([width/ 2, height /2])
+        .scale(850);
+    //converts the projection to paths
+    var path = d3.geoPath()
+        .projection(projection);
+
+    d3.json("https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json").then(function(data) {
+        var states = topojson.feature(data, data.objects.states).features;
+        console.log(states);
+        canvas.selectAll(".state")
+            .data(states)
+            .enter()
+                .append('path')
+                .attr('class', 'state')
+                .attr('d', path)
+                .attr('fill', 'red');
+    });
 }
