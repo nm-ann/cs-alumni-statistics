@@ -1,0 +1,16 @@
+/* for some reason it doesn't transition when going from one path to another */
+.gender g path {
+    transition: 0.7s;
+}
+/* when you hover over the arc class, affect its path child. This way it also works when you hover over the text */
+.gender g .arc:hover > path {
+    fill: yellow;
+}
+
+.industry g .arc {
+    transition: 0.3s;
+}
+.industry g .arc:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
