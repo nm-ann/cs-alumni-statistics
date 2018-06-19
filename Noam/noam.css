@@ -1,23 +1,41 @@
 /* for some reason it doesn't transition when going from one path to another */
-.gender g path {
+.gender-pie path {
     transition: 0.7s;
 }
 /* when you hover over the arc class, affect its path child. This way it also works when you hover over the text */
-.gender g .arc:hover > path {
+.gender-pie:hover > path {
     fill: yellow;
 }
 
-.industry g .arc {
+.industry-pie {
     transition: 0.3s;
 }
-.industry g .arc:hover {
+.industry-pie:hover {
     transform: scale(1.1);
     cursor: pointer;
 }
 
-.us-locations path {
+.state {
+    stroke: #333333;
     transition: 0.15s;
 }
-.us-locations path:hover {
+.state:hover {
     fill: orange;
+}
+
+.line {
+    stroke: steelblue;
+    stroke-width: 2px;
+}
+
+.x-axis {
+    stroke-width: 2px;
+}
+
+.y-axis {
+    stroke-width: 2px;
+}
+
+.tick {
+    font-size: 1.2em;
 }

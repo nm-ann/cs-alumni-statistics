@@ -1,6 +1,7 @@
 gender();
 industry();
 usLocations();
+gradYear();
 
 function gender() {
     //data as an array of json objects, each object holds the information for its respectove 'pie slice'
@@ -51,7 +52,7 @@ function gender() {
         //creates any 'missing' elements that the data calls for, appends a g to it, and gives it a class of arc
         .enter()
             .append('g')
-                .attr('class', 'arc')
+                .attr('class', 'gender-pie')
     //creates a path for each section whose color reflects the data for that section
     arcs.append('path')
         //d is the svg attribute for the parameters of the path, arc will make the path generate an arc 
@@ -150,7 +151,7 @@ function industry() {
         .data(pie(industryData))
         .enter()
         .append('g')
-        .attr('class', 'arc')
+        .attr('class', 'industry-pie')
     //creates a path for each section whose color reflects the data for that section
     arc.append('path')
         .attr('d', path)
@@ -164,7 +165,8 @@ function industry() {
         })
         .attr('text-anchor', 'middle')
         .attr('dy', '0.35em')
-        .attr('font-size', '1.5em')
+        .attr('dx', '0.35em')
+        .attr('font-size', '1.2em')
         .text(function(d) {
             return d.data.name + ' ' + d.data.amount + '%';
         })
@@ -191,13 +193,234 @@ function usLocations() {
 
     d3.json("https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json").then(function(data) {
         var states = topojson.feature(data, data.objects.states).features;
-        console.log(states);
         canvas.selectAll(".state")
             .data(states)
             .enter()
                 .append('path')
                 .attr('class', 'state')
                 .attr('d', path)
-                .attr('fill', 'red');
+                .attr('fill', '#b62121');
     });
+}
+
+function gradYear() {
+    var gradYearData = [
+        {
+            "year": 1981,
+            "amount": 1
+        },
+        {
+            "year": 1982,
+            "amount": 1
+        },
+        {
+            "year": 1983,
+            "amount": 2
+        },
+        {
+            "year": 1984,
+            "amount": 5
+        },
+        {
+            "year": 1985,
+            "amount": 10
+        },
+        {
+            "year": 1986,
+            "amount": 8
+        },
+        {
+            "year": 1987,
+            "amount": 14
+        },
+        {
+            "year": 1988,
+            "amount": 8
+        },
+        {
+            "year": 1989,
+            "amount": 12
+        },
+        {
+            "year": 1990,
+            "amount": 7
+        },
+        {
+            "year": 1991,
+            "amount": 7
+        },
+        {
+            "year": 1992,
+            "amount": 1
+        },
+        {
+            "year": 1993,
+            "amount": 5
+        },
+        {
+            "year": 1994,
+            "amount": 6
+        },
+        {
+            "year": 1995,
+            "amount": 3
+        },
+        {
+            "year": 1996,
+            "amount": 7
+        },
+        {
+            "year": 1997,
+            "amount": 4
+        },
+        {
+            "year": 1998,
+            "amount": 10
+        },
+        {
+            "year": 1999,
+            "amount": 14
+        },
+        {
+            "year": 2000,
+            "amount": 10
+        },
+        {
+            "year": 2001,
+            "amount": 18
+        },
+        {
+            "year": 2002,
+            "amount": 12
+        },
+        {
+            "year": 2003,
+            "amount": 12
+        },
+        {
+            "year": 2004,
+            "amount": 13
+        },
+        {
+            "year": 2005,
+            "amount": 5
+        },
+        {
+            "year": 2006,
+            "amount": 7
+        },
+        {
+            "year": 2008,
+            "amount": 5
+        },
+        {
+            "year": 2009,
+            "amount": 2
+        },
+        {
+            "year": 2010,
+            "amount": 4
+        },
+        {
+            "year": 2011,
+            "amount": 4
+        },
+        {
+            "year": 2012,
+            "amount": 6
+        },
+        {
+            "year": 2013,
+            "amount": 5
+        },
+        {
+            "year": 2014,
+            "amount": 7
+        },
+        {
+            "year": 2015,
+            "amount": 6
+        },
+        {
+            "year": 2016,
+            "amount": 8
+        },
+        {
+            "year": 2017,
+            "amount": 0
+        },
+        {
+            "year": 2018,
+            "amount": 4
+        }
+    ]
+    var margin = {top: 20, right: 20, bottom: 50, left: 70}
+    var width = 800 - margin.left - margin.right;
+    var height = 500 - margin.top - margin.bottom;
+
+    //chart's x ranges from 0 to the full width
+    var x = d3.scaleTime()
+        .range([0, width]);
+    //chart's y ranges from 0 to the full width
+    var y = d3.scaleLinear()
+        .range([height - margin.top, 0]);
+    
+    var line = d3.line()
+        .x(function(d) {
+            return x(d.year)
+        })
+        .y(function(d) {
+            return y(d.amount)
+        });
+
+    var canvas = d3.select('.grad-year')
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom);
+
+    var g = canvas.append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    gradYearData.forEach(function(d) {
+        d.year = d3.timeParse('%Y')(d.year);
+        d.amount = +d.amount;
+    });
+    
+    x.domain(d3.extent(gradYearData, function(d) {
+        return d.year;
+    }));
+    y.domain(d3.extent(gradYearData, function(d) {
+        return d.amount;
+    }));
+
+    canvas.append('g')
+        .attr('class', 'x-axis')
+        .attr('transform', 'translate(50,' + height + ')')
+        .call(d3.axisBottom(x).ticks(gradYearData.length/2));
+
+    canvas.append('text')
+            .attr('x', (width / 2) + margin.left)
+            .attr('y', height + margin.bottom)
+            .style('text-anchor', 'middle')
+            .style('font-size', '1.5em')
+            .text('Year');
+
+    canvas.append('g')
+        .attr('class', 'y-axis')
+        .attr('transform', 'translate(50, 20)')
+        .call(d3.axisLeft(y))
+    canvas.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x',0 - (height / 2))
+        .attr('dy', '1em')
+        .style('text-anchor', 'middle')
+        .style('font-size', '1.5em')
+        .text('Graduates');
+
+    canvas.append('path')
+        .datum(gradYearData)
+        .attr('transform', 'translate(50 ,20)')
+        .attr('class', 'line')
+        .attr('d', line)
+        .attr('fill', 'none')
 }
