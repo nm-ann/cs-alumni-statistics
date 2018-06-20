@@ -184,15 +184,16 @@ function usLocations() {
     
     var g = canvas.append('g');
     
-    //makes a 2d projection of the us
+    //makes a 2d projection of the us, based on logitude and latitude
     var projection = d3.geoAlbersUsa()
         .translate([width/ 2, height /2])
         .scale(850);
     //converts the projection to paths
     var path = d3.geoPath()
         .projection(projection);
-
+    //loads up the json with the us map data
     d3.json("https://gist.githubusercontent.com/mbostock/4090846/raw/d534aba169207548a8a3d670c9c2cc719ff05c47/us.json").then(function(data) {
+        //gets all the state data from the json and makes paths for each state
         var states = topojson.feature(data, data.objects.states).features;
         canvas.selectAll(".state")
             .data(states)
@@ -205,6 +206,7 @@ function usLocations() {
 }
 
 function gradYear() {
+    //data about how people graduated each year
     var gradYearData = [
         {
             "year": 1981,
@@ -359,13 +361,14 @@ function gradYear() {
     var width = 800 - margin.left - margin.right;
     var height = 500 - margin.top - margin.bottom;
 
-    //chart's x ranges from 0 to the full width
+    //chart's x ranges from 0 to the full width. In other words, the highest x is at the rightmost side of the chart
+    //the scale is based on year, so we use d3.scaleTime()
     var x = d3.scaleTime()
         .range([0, width]);
-    //chart's y ranges from 0 to the full width
+    //chart's y ranges from 0 to the full height. In other words, the highest y is at the top of the chart
     var y = d3.scaleLinear()
         .range([height - margin.top, 0]);
-    
+    //create the line. Each 'node' will be at the x value of a year and the y value of the amount of graduates
     var line = d3.line()
         .x(function(d) {
             return x(d.year)
@@ -373,44 +376,45 @@ function gradYear() {
         .y(function(d) {
             return y(d.amount)
         });
-
+    //make the chart canvas
     var canvas = d3.select('.grad-year')
         .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom);
-
+    //attach a group to it
     var g = canvas.append('g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
+    //for each piece of data, have d3 parse the years as years and add the amount (?)
     gradYearData.forEach(function(d) {
         d.year = d3.timeParse('%Y')(d.year);
         d.amount = +d.amount;
     });
-    
+    //sets the x domain to the max and min years from the data
     x.domain(d3.extent(gradYearData, function(d) {
         return d.year;
     }));
+    //sets the y domain to the max and min amounts from the data
     y.domain(d3.extent(gradYearData, function(d) {
         return d.amount;
     }));
-
+    //create the x-axis line
     canvas.append('g')
         .attr('class', 'x-axis')
         .attr('transform', 'translate(50,' + height + ')')
         .call(d3.axisBottom(x).ticks(gradYearData.length/2));
-
+    //label the line with text
     canvas.append('text')
             .attr('x', (width / 2) + margin.left)
             .attr('y', height + margin.bottom)
             .style('text-anchor', 'middle')
             .style('font-size', '1.5em')
             .text('Year');
-
+    //make the y axis line
     canvas.append('g')
         .attr('class', 'y-axis')
         .attr('transform', 'translate(50, 20)')
         .call(d3.axisLeft(y));
-
+    //label the line with text
     canvas.append('text')
         .attr('transform', 'rotate(-90)')
         .attr('x',0 - (height / 2))
@@ -418,16 +422,49 @@ function gradYear() {
         .style('text-anchor', 'middle')
         .style('font-size', '1.5em')
         .text('Graduates');
-
+    //make an object that will allow the user to focus on a piece of data
+    //it will be invisible unless the user's mouse is hovering over the chart
+    var focus = canvas.append('g')
+        .style('display', 'none')
+    //create the line's path using the data
     canvas.append('path')
         .datum(gradYearData)
         .attr('transform', 'translate(50 ,20)')
         .attr('class', 'line')
         .attr('d', line)
         .attr('fill', 'none')
+    //append a circle to the focus object, so the data it focuses on will be circled
+    focus.append('circle')
+        .attr('class', 'focus-circle')
+        .style('fill', 'none')
+        .attr('r', 7)
+    //this is just to detect mouse movement within the chart
+    canvas.append('rect')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .style('fill', 'none')
+        .style('pointer-events', 'all')
+        //when the mouse hovers over the chart, remove the display css
+        .on('mouseover', function() {
+            focus.style('display', null)
+        })
+        //when the mouse hovers off the chart, make the focus circle invisible
+        .on('mouseout', function() {
+            focus.style('display', 'none')
+        })
+        //when the mouse moves around the chart, update the focus circle's position to reflect the mouse position and the closest piece of data
+        .on('mousemove', function() {
+            var x0 = x.invert(d3.mouse(this)[0] - 40);
+            var bisectYear = d3.bisector(function(d) { return d.year; }).left;
+            var i = bisectYear(gradYearData, x0, 1);
+            var d = x0 - gradYearData[i - 1] > gradYearData[i] - x0 ? gradYearData[i] : gradYearData[i - 1];
+            focus.select('circle.focus-circle')
+                .attr('transform', 'translate(' + (x(d.year) + 50) + ',' + (y(d.amount) + 20) + ')')
+        })
 }
 
 function gradSchool() {
+     //data about the different universities
     var gradSchoolData= [
         {
             "name": "Yeshiva University",
@@ -588,39 +625,41 @@ function gradSchool() {
     //chart's y ranges from 0 to the full width
     var y = d3.scaleLinear()
         .range([height - margin.top, 0]);
-
+    //chart's x ranges from 0 to the full width. In other words, the highest x is at the rightmost side of the chart
+    //the scale is based on the university names, so we map the domain to the names
     x.domain(gradSchoolData.map(function(d) {
         return d.name;
     }));
+    //chart's y ranges from 0 to the largest total amount of students in any school
     y.domain([0, d3.max(gradSchoolData, function(d) {
         return d.total;
     })]);
-
+    //make the chart canvas
     var canvas = d3.select('.grad-school')
         .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom);
-
+    //attach a group to it
     var g = canvas.append('g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
+     //create the x-axis line
     canvas.append('g')
         .attr('class', 'x-axis')
         .attr('transform', 'translate(50,' + height + ')')
         .call(d3.axisBottom(x));
-
+    //label the line with text
     canvas.append('text')
         .attr('x', (width / 2) + margin.left)
         .attr('y', height + margin.bottom)
         .style('text-anchor', 'middle')
         .style('font-size', '1.5em')
         .text('University');
-        
+    //create the y-axis line
     canvas.append('g')
         .attr('class', 'y-axis')
         .attr('transform', 'translate(50, 20)')
         .call(d3.axisLeft(y))
-
+    //label the line with text
     canvas.append('text')
         .attr('transform', 'rotate(-90)')
         .attr('x',0 - (height / 2))
@@ -628,7 +667,7 @@ function gradSchool() {
         .style('text-anchor', 'middle')
         .style('font-size', '1.5em')
         .text('Alumni');
-
+    //create a bar for each university
     canvas.selectAll('bar')
         .data(gradSchoolData)
         .enter()
@@ -636,14 +675,38 @@ function gradSchool() {
             .attr('fill', function(d) {
                 return d.color;
             })
+            //it's x position will be based on its name
             .attr('x', function(d) {
                 return x(d.name) + (margin.left / 1.4);
             })
             .attr('width', x.bandwidth)
+            //it's y position will be based on its amount of students
             .attr('y', function(d) {
                 return y(d.total) + margin.top;
             })
             .attr('height', function(d) {
                 return height - y(d.total) - margin.top;
             })
+            .style('pointer-events', 'all')
+            //when the mouse hovers over a bar, remove the display css, making the focus visible
+            //center the text on the bar and display the bar's total amount of students
+            .on('mouseover', function(d) {
+                focus.style('display', null)
+                focus.select('text.focus-text')
+                    .attr('transform', 'translate(' + (x(d.name) + 60) + ',' + 
+                    ((y(d.total) + 20 + ((height - y(d.total)) / 2 ))) + ')')
+                    .text(d.total);
+            })
+            //when the mouse hovers off of a bar, make the focus invisible
+            .on('mouseout', function() {
+                focus.style('display', 'none')
+            })
+           
+    //create a focus object for when the mouse is over a bar
+    //it's initially invisible
+    var focus = canvas.append('g')
+        .style('display', 'none')
+    //append text to the focus object that will show the particular bar's amount of students
+    focus.append('text')
+        .attr('class', 'focus-text')
 }

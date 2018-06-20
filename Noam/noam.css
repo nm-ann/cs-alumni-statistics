@@ -40,6 +40,11 @@
     font-size: 1.2em;
 }
 
+.grad-year .focus-circle {
+    stroke: steelblue;
+    stroke-width: 4px;
+}
+
 .grad-school .x-axis {
     stroke-width: 2px;
 }
@@ -50,4 +55,9 @@
 
 .grad-school .tick {
     font-size: 1.1em;
+}
+
+.grad-school .focus-text {
+    fill: white;
+    font-size: 2em;
 }
