@@ -3,6 +3,7 @@ industry();
 usLocations();
 gradYear();
 gradSchool();
+curEmployer();
 
 function gender() {
     //data as an array of json objects, each object holds the information for its respectove 'pie slice'
@@ -709,4 +710,31 @@ function gradSchool() {
     //append text to the focus object that will show the particular bar's amount of students
     focus.append('text')
         .attr('class', 'focus-text')
+}
+
+function curEmployer() {
+    var width = 960;
+    var height = 800;
+    console.log('cur employer');
+
+    var canvas = d3.select('.cur-employer')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    d3.json("https://raw.githubusercontent.com/nm-ann/cs-alumni-statistics/master/Noam/employer-industries.json").then(function(data) {
+            console.log(data);
+            var force = d3.forceSimulation(data.employerIndustries)
+                .on('tick', ticked(data))
+        });
+}
+
+function ticked(data) {
+    console.log('ticked()');
+    var canvas = d3.select('.cur-employer svg')
+        .selectAll('circle')
+        .data(data)
+        .enter()
+            .append('circle')
+            .attr('r', 5);
 }

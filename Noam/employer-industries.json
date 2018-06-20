@@ -1,5 +1,5 @@
 {
-    "employer-industries": [
+    "employerIndustries": [
         {"employer": "Ad Hoc LLC", "industry": "Technology/Medicine"},
         {"employer": "Adobe", "industry": "Technology"},
         {"employer": "Aish", "industry": "Education"},
