@@ -722,7 +722,7 @@ function curEmployer() {
         .attr('height', height);
     
     d3.json("https://raw.githubusercontent.com/nm-ann/cs-alumni-statistics/master/Noam/employer-industries.json").then(function(data) {
-        var techNodes = data.id.filter(employer => {
+        var techNodes = data.employers.filter(employer => {
             return employer.industry.includes('Technology');
         })
         console.log(techNodes);
@@ -738,10 +738,10 @@ function curEmployer() {
             .force('collision', d3.forceCollide().radius(function(d) {
                 return d.alumni * 5;
               }))
-            .force('link', d3.forceLink().links(function(d) {
-                return d.id;
+            .force('link', d3.forceLink(techLinks).id(function(d) {
+                return d.employer;
             }))
-            .on('tick', update(techNodes));
+            .on('tick', update(techNodes, techLinks));
     });
 }
 
@@ -752,8 +752,8 @@ function findLink(node, techNodes) {
         techNodes.some(otherNode => {
             if((otherNode !== node) && (node.alumni - otherNode.alumni == i)) {
                 result = {
-                    'source': node.id,
-                    'target': otherNode.id
+                    'source': node.employer,
+                    'target': otherNode.employer
                 };
                 return result != undefined;
             }
@@ -762,7 +762,7 @@ function findLink(node, techNodes) {
     return result;
 }
 
-function update(techNodes) {
+function update(techNodes, techLinks) {
     var canvas = d3.select('.cur-employer svg')
         .selectAll('circle')
         .data(techNodes)
@@ -776,7 +776,12 @@ function update(techNodes) {
             })
             .attr('cy', function(d) {
                 return d.y;
-            })
+            });
+
+    canvas.selectAll('line')
+        .data(techLinks)
+        .enter()
+            .appened('line')
 
     canvas.exit().remove();
 }
