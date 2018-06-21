@@ -722,8 +722,8 @@ function curEmployer() {
         .attr('height', height);
     
     d3.json("https://raw.githubusercontent.com/nm-ann/cs-alumni-statistics/master/Noam/employer-industries.json").then(function(data) {
-        var techNodes = data.employers.filter(employer => {
-            return employer.industry.includes('Technology');
+        var techNodes = data.employers.filter(e => {
+            return e.industry.includes('Technology');
         })
         console.log(techNodes);
 
@@ -781,7 +781,11 @@ function update(techNodes, techLinks) {
     canvas.selectAll('line')
         .data(techLinks)
         .enter()
-            .appened('line')
+            .append('line')
+            .attr('x1', function(d){return d.source.x})
+            .attr('x2', function(d){return d.target.x})
+            .attr('y1', function(d){return d.source.y})
+            .attr('y2', function(d){return d.target.x})
 
     canvas.exit().remove();
 }
