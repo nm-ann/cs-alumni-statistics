@@ -713,17 +713,32 @@ function gradSchool() {
 }
 
 function curEmployer() {
-    var width = 960;
+    var width = 900;
     var height = 800;
-    console.log('cur employer');
-
+    var r = 10;
     var canvas = d3.select('.cur-employer')
         .append('svg')
         .attr('width', width)
         .attr('height', height);
-
+    
     d3.json("https://raw.githubusercontent.com/nm-ann/cs-alumni-statistics/master/Noam/employer-industries.json").then(function(data) {
-            var force = d3.forceSimulation(data.employerIndustries)
-                .on('tick', ticked(data))
-        });
+        var technology = data.employerIndustries.filter(employer => {
+            return employer.industry.includes('Technology');
+        })
+        
+        var simulation = d3.forceSimulation()
+            .force('x', d3.forceX(width/2))
+            .force('y', d3.forceY(height/2))
+            .force('collide', d3.forceCollide(r + 1))
+            .force('charge', d3.forceManyBody())
+            .on('tick', update(canvas, technology));
+    });
+}
+
+function update(canvas, data) {
+    data.forEach(drawNode);
+}
+
+function drawNode(node) {
+
 }
