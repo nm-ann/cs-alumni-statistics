@@ -713,8 +713,8 @@ function gradSchool() {
 }
 
 function curEmployer() {
-    var width = 900;
-    var height = 800;
+    var width = 600;
+    var height = 300;
     var r = 10;
     var canvas = d3.select('.cur-employer')
         .append('svg')
@@ -734,7 +734,7 @@ function curEmployer() {
 
         var simulation = d3.forceSimulation(techNodes)
             .force('charge', d3.forceManyBody())
-            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('center', d3.forceCenter(width / 2, height))
             .force('collision', d3.forceCollide().radius(function(d) {
                 return d.alumni * 5;
               }))
@@ -764,19 +764,6 @@ function findLink(node, techNodes) {
 
 function update(techNodes, techLinks) {
     var canvas = d3.select('.cur-employer svg')
-        .selectAll('circle')
-        .data(techNodes)
-        .enter()
-            .append('circle')
-            .attr('r', function(d) {
-                return d.alumni * 5;
-            })
-            .attr('cx', function(d) {
-                return d.x;
-            })
-            .attr('cy', function(d) {
-                return d.y;
-            });
 
     canvas.selectAll('line')
         .data(techLinks)
@@ -785,7 +772,35 @@ function update(techNodes, techLinks) {
             .attr('x1', function(d){return d.source.x})
             .attr('x2', function(d){return d.target.x})
             .attr('y1', function(d){return d.source.y})
-            .attr('y2', function(d){return d.target.x})
+            .attr('y2', function(d){return d.target.y})
+            .attr('stroke', 'steelblue')
+            .attr('stroke-width', '1px')
+            
+    canvas.selectAll('circle')
+        .data(techNodes)
+        .enter()
+            .append('circle')
+            .attr('r', function(d) {
+                return d.alumni * 2;
+            })
+            .attr('cx', function(d) {
+                return d.x;
+            })
+            .attr('cy', function(d) {
+                return d.y;
+            })
+            .attr('fill', 'white')
+            .attr('stroke', 'steelblue');
+
+    canvas.selectAll('text')
+        .data(techNodes)
+        .enter()
+            .append('text')
+            .attr('dx', function(d){return d.x})
+            .attr('dy', function(d){return d.y})
+            .attr('fill', 'black')
+            .attr('font-size', '0.5em')
+            .text(function(d){return d.employer});
 
     canvas.exit().remove();
 }
