@@ -1,5 +1,5 @@
 {
-    "ids": [
+    "employers": [
         {"id": "Ad Hoc LLC", "industry": "Technology/Medicine", "alumni": 1},
         {"id": "Adobe", "industry": "Technology", "alumni": 1},
         {"id": "Aish", "industry": "Education", "alumni": 1},
