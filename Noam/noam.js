@@ -722,23 +722,59 @@ function curEmployer() {
         .attr('height', height);
     
     d3.json("https://raw.githubusercontent.com/nm-ann/cs-alumni-statistics/master/Noam/employer-industries.json").then(function(data) {
-        var technology = data.employerIndustries.filter(employer => {
+        var techNodes = data.employers.filter(employer => {
             return employer.industry.includes('Technology');
         })
-        
-        var simulation = d3.forceSimulation()
-            .force('x', d3.forceX(width/2))
-            .force('y', d3.forceY(height/2))
-            .force('collide', d3.forceCollide(r + 1))
+        console.log(techNodes);
+
+        var techLinks = techNodes.map(node => {
+            return findLink(node, techNodes);
+        });
+        console.log(techLinks);
+
+        var simulation = d3.forceSimulation(techNodes)
             .force('charge', d3.forceManyBody())
-            .on('tick', update(canvas, technology));
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(function(d) {
+                return d.alumni * 5;
+              }))
+            .force('link', d3.forceLink().links(techLinks))
+            .on('tick', update(techNodes));
     });
 }
 
-function update(canvas, data) {
-    data.forEach(drawNode);
+function findLink(node, techNodes) {
+    var result;
+    for(let i = 0; i < node.alumni; i++) {
+        if(result !== undefined) break;
+        techNodes.some(otherNode => {
+            if((otherNode !== node) && (node.alumni - otherNode.alumni == i)) {
+                result = {
+                    'source': node,
+                    'target': otherNode
+                };
+                return result != undefined;
+            }
+        });
+    }
+    return result;
 }
 
-function drawNode(node) {
+function update(techNodes) {
+    var canvas = d3.select('.cur-employer svg')
+        .selectAll('circle')
+        .data(techNodes)
+        .enter()
+            .append('circle')
+            .attr('r', function(d) {
+                return d.alumni * 5;
+            })
+            .attr('cx', function(d) {
+                return d.x;
+            })
+            .attr('cy', function(d) {
+                return d.y;
+            })
 
+    canvas.exit().remove();
 }
