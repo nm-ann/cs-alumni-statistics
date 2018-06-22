@@ -713,8 +713,8 @@ function gradSchool() {
 }
 
 function curEmployer() {
-    var width = 1200;
-    var height = 500;
+    var width = 800;
+    var height = 800;
     var r = 10;
     var canvas = d3.select('.cur-employer')
         .append('svg')
@@ -727,8 +727,9 @@ function curEmployer() {
         })
         console.log(techNodes);
 
+        var alreadyLinked = [];
         var techLinks = techNodes.map(node => {
-            return findLink(node, techNodes);
+            return findLink(node, techNodes, alreadyLinked);
         });
         console.log(techLinks);
 
@@ -736,12 +737,13 @@ function curEmployer() {
             .force('charge', d3.forceManyBody())
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(function(d) {
-                return d.alumni * 100;
+                return d.alumni * 70;
               }))
             .force('link', d3.forceLink(techLinks).id(function(d) {
                 return d.employer;
-            }).distance(400))
-            .on('tick', function() {
+            }).distance(200))
+            .on('tick', function() { 
+                //d3 doesn't require you to make this an anonymous function, but if it's not, you can't pass arguments into it
                 canvas.selectAll('line')
                     .data(techLinks)
                     .enter()
@@ -785,19 +787,27 @@ function curEmployer() {
     });
 }
 
-    function findLink(node, techNodes) {
+    function findLink(node, techNodes, alreadyLinked) {
         var result;
         for(let i = 0; i < node.alumni; i++) {
             if(result !== undefined) break;
             techNodes.some(otherNode => {
-                if((otherNode !== node) && (node.alumni - otherNode.alumni == i)) {
+                if((otherNode !== node) && (!alreadyLinked.includes(otherNode.employer)) && (node.alumni - otherNode.alumni == i)) {
                     result = {
                         'source': node.employer,
                         'target': otherNode.employer
                     };
+                    alreadyLinked.push(otherNode.employer);
+                    alreadyLinked.push(node.employer);
                     return result != undefined;
                 }
             });
+        }
+        if(result === undefined) {
+            result = {
+                'source': node.employer,
+                'target': node.employer
+            };
         }
         return result;
     }
