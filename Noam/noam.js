@@ -689,27 +689,33 @@ function gradSchool() {
                 return height - y(d.total) - margin.top;
             })
             .style('pointer-events', 'all')
-            //when the mouse hovers over a bar, remove the display css, making the focus visible
+            //when the mouse hovers over a bar, make the opacity 1
             //center the text on the bar and display the bar's total amount of students
             .on('mouseover', function(d) {
-                focus.style('display', null)
+                var bar = d3.select(this);
+                bar.style('cursor', 'pointer');
+                focus.transition().duration(500)
+                    .style('opacity', 1);
                 focus.select('text.focus-text')
                     .attr('transform', 'translate(' + (x(d.name) + 60) + ',' + 
                     ((y(d.total) + 20 + ((height - y(d.total)) / 2 ))) + ')')
                     .text(d.total);
             })
-            //when the mouse hovers off of a bar, make the focus invisible
+            //when the mouse hovers off of a bar, make the focus opacity 0
             .on('mouseout', function() {
-                focus.style('display', 'none')
+                focus.transition()
+                    .style('opacity', 0)
             })
            
     //create a focus object for when the mouse is over a bar
-    //it's initially invisible
+    //it's initially with 0 opacity
     var focus = canvas.append('g')
-        .style('display', 'none')
+        .style('opacity', 0)
+        
     //append text to the focus object that will show the particular bar's amount of students
     focus.append('text')
         .attr('class', 'focus-text')
+        .attr('stoke', 'none');
 }
 
 function curEmployer() {
@@ -734,10 +740,10 @@ function curEmployer() {
         console.log(techLinks);
 
         var simulation = d3.forceSimulation(techNodes)
-            .force('charge', d3.forceManyBody())
+            .force('charge', d3.forceManyBody().strength(-700))
             .force('center', d3.forceCenter(width / 2, height / 2))
             .force('collision', d3.forceCollide().radius(function(d) {
-                return d.alumni * 70;
+                return d.alumni * 40;
               }))
             .force('link', d3.forceLink(techLinks).id(function(d) {
                 return d.employer;
@@ -760,7 +766,7 @@ function curEmployer() {
                     .enter()
                         .append('circle')
                         .attr('r', function(d) {
-                            return d.alumni * 2;
+                            return d.alumni * 8;
                         })
                         .attr('cx', function(d) {
                             return d.x;
@@ -787,70 +793,68 @@ function curEmployer() {
     });
 }
 
-    function findLink(node, techNodes, alreadyLinked) {
-        var result;
-        for(let i = 0; i < node.alumni; i++) {
-            if(result !== undefined) break;
-            techNodes.some(otherNode => {
-                if((otherNode !== node) && (!alreadyLinked.includes(otherNode.employer)) && (node.alumni - otherNode.alumni == i)) {
-                    result = {
-                        'source': node.employer,
-                        'target': otherNode.employer
-                    };
-                    alreadyLinked.push(otherNode.employer);
-                    alreadyLinked.push(node.employer);
-                    return result != undefined;
-                }
-            });
-        }
-        if(result === undefined) {
-            result = {
-                'source': node.employer,
-                'target': node.employer
-            };
-        }
-        return result;
+function findLink(node, techNodes, alreadyLinked) {
+    var result;
+    for(let i = 0; i < node.alumni; i++) {
+        if(result !== undefined) break;
+        techNodes.some(otherNode => {
+            if((otherNode !== node) && (!alreadyLinked.includes(otherNode.employer)) && (node.alumni - otherNode.alumni == i)) {
+                result = {
+                    'source': node.employer,
+                    'target': otherNode.employer
+                };
+                alreadyLinked.push(otherNode.employer);
+                alreadyLinked.push(node.employer);
+                return result != undefined;
+            }
+        });
     }
+    if(result === undefined) {
+        result = {
+            'source': node.employer,
+            'target': node.employer
+        };
+    }
+    return result;
+}
 
-    function update(techNodes, techLinks) {
-        var canvas = d3.select('.cur-employer svg')
+function update(techNodes, techLinks) {
+    var canvas = d3.select('.cur-employer svg')
 
-        canvas.selectAll('line')
-            .data(techLinks)
-            .enter()
-                .append('line')
-                .attr('x1', function(d){return d.source.x})
-                .attr('x2', function(d){return d.target.x})
-                .attr('y1', function(d){return d.source.y})
-                .attr('y2', function(d){return d.target.y})
-                .attr('stroke', 'steelblue')
-                .attr('stroke-width', '1px')
-                
-        canvas.selectAll('circle')
-            .data(techNodes)
-            .enter()
-                .append('circle')
-                .attr('r', function(d) {
-                    return d.alumni * 2;
-                })
-                .attr('cx', function(d) {
-                    return d.x;
-                })
-                .attr('cy', function(d) {
-                    return d.y;
-                })
-                .attr('fill', 'white')
-                .attr('stroke', 'steelblue');
+    canvas.selectAll('line')
+        .data(techLinks)
+        .enter()
+            .append('line')
+            .attr('x1', function(d){return d.source.x})
+            .attr('x2', function(d){return d.target.x})
+            .attr('y1', function(d){return d.source.y})
+            .attr('y2', function(d){return d.target.y})
+            .attr('stroke', 'steelblue')
+            .attr('stroke-width', '1px')
+            
+    canvas.selectAll('circle')
+        .data(techNodes)
+        .enter()
+            .append('circle')
 
-        canvas.selectAll('text')
-            .data(techNodes)
-            .enter()
-                .append('text')
-                .attr('dx', function(d){return d.x})
-                .attr('dy', function(d){return d.y})
-                .attr('fill', 'black')
-                .attr('font-size', '0.5em')
-                .text(function(d){return d.employer});
+            .attr('cx', function(d) {
+                return d.x;
+            })
+            .attr('cy', function(d) {
+                return d.y;
+            })
+            .attr('fill', 'white')
+            .attr('stroke', 'steelblue');
 
-        canvas.exit().remove();
+    canvas.selectAll('text')
+        .data(techNodes)
+        .enter()
+            .append('text')
+            .attr('dx', function(d){return d.x})
+            .attr('dy', function(d){return d.y})
+            .attr('fill', 'black')
+            .attr('font-size', '0.5em')
+            .text(function(d){return d.employer});
+
+    canvas.exit().remove();
 }
